@@ -14,6 +14,7 @@ session_api = vk_session.get_api()
 longpoll = VkLongPoll(vk_session)
 
 
+
 #функции для отправки фото (начало на 19 строке)
 
 
@@ -36,20 +37,16 @@ def send_photo(vk, peer_id, owner_id, photo_id, access_key):
     )
 
 
-def main():
-    vk_session = vk_api.VkApi(token = main_token)
-    vk = vk_session.get_api()
-    upload = VkUpload(vk)
-
-    send_photo(vk, PEER_ID, *upload_photo(upload, '1.jpg'))
-
+def main(session_api):
+    upload = VkUpload(session_api)
+    send_photo(session_api, PEER_ID, *upload_photo(upload, '1.jpg'))
 
 
 #функции для отправки фото (конец на 43 строчке)
 
 
 def sender(id, text): #функции для отправки сообщения
-  vk_session.method('messages.send', {'user_id' : id, 'message' : text, 'random_id' : 0})
+  vk_session.method('messages.send', {'user_id': id, 'message': text, 'random_id': 0})
 
 
 
@@ -58,10 +55,12 @@ for event in longpoll.listen(): #чекаем сообщения боту
         if event.to_me:
             msg = event.text.lower() #переводим в нижний регистр сообщения для простого распознования и ифов
             id = event.user_id #id-шник пользователя, ОБЯЗАТЕЛЬНО НАХУЙ
+            user = vk_session.method("users.get", {"user_id": id})
+            fullname = user[0]['first_name'] + ' ' + user[0]['last_name']
             for msg_for in msg.split(): #разбиваем строку на массив
                 if msg_for == "пидр":
-                    sender(id, 'пошёл нахуй чмо ебаное') #функции для отправки текстового сообщения
+                    text = fullname + ' ' + 'пошёл нахуй чмо ебаное'
+                    sender(id, text) #функции для отправки текстового сообщения
                     PEER_ID = id
                     if __name__ == '__main__':
-                        main() #функции для отправки картинки
-
+                        main(session_api) #функции для отправки картинки
